@@ -5,15 +5,15 @@ exports.getExchangeRate = async function(fromCurrency, toCurrency) {
         return 1;
     }
 
-    const url = `https://v6.exchangerate-api.com/v6/a21440e3c1f0c84f605c1a70/latest/${fromCurrency}`;
+    const url = `https://v6.exchangerate-api.com/v6/a21440e3c1f0c84f605c1a70/latest/EUR`;
 
     try {
         const response = await axios.get(url);
-        if (!response.data || !response.data.conversion_rates) {
-            throw new Error(`Response from API is missing conversion_rates.`);
+        if (!response.data || !response.data.rates) {
+            throw new Error(`Response from API is missing rates.`);
         }
 
-        const rate = response.data.conversion_rates[toCurrency];
+        const rate = response.data.rates[toCurrency];
         if (!rate) {
             throw new Error(`Unable to find exchange rate for ${toCurrency}`);
         }
@@ -23,3 +23,4 @@ exports.getExchangeRate = async function(fromCurrency, toCurrency) {
         throw new Error(`Error fetching data from the API: ${errorMsg}`);
     }
 };
+
