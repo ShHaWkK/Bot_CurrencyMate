@@ -1,8 +1,8 @@
 const fs = require('fs');
 const path = require('path');
+const { Client, GatewayIntentBits, Collection } = require('discord.js');
 const { REST } = require('@discordjs/rest');
 const { Routes } = require('discord-api-types/v10');
-const { Client, GatewayIntentBits, Collection } = require('discord.js');
 require('dotenv').config();
 
 const client = new Client({
@@ -14,50 +14,20 @@ const client = new Client({
     ],
 });
 
-const { SlashCommandBuilder } = require('@discordjs/builders');
-
-module.exports = {
-    data: new SlashCommandBuilder()
-        .setName('convert')
-        .setDescription('Convertir une devise en une autre')
-        .addStringOption(option => 
-            option.setName('from')
-            .setDescription('La devise à convertir')
-            .setRequired(true))
-        .addStringOption(option => 
-            option.setName('to')
-            .setDescription('La devise dans laquelle convertir')
-            .setRequired(true))
-        .addNumberOption(option => 
-            option.setName('amount')
-            .setDescription('Le montant à convertir')
-            .setRequired(true)),
-    async execute(interaction) {
-        const fromCurrency = interaction.options.getString('from');  
-        const toCurrency = interaction.options.getString('to');
-        const amount = interaction.options.getNumber('amount');
-        const rate = await api.getExchangeRate(fromCurrency, toCurrency);  
-    
-    },
-};
-
-
 client.commands = new Collection();
 const commands = [];
 const commandsPath = path.join(__dirname, 'src', 'commands');
 const commandFiles = fs.readdirSync(commandsPath).filter(file => file.endsWith('.js'));
 
+// Assurez-vous que api est requis correctement
+const api = require('./src/utils/api');
+
 for (const file of commandFiles) {
     const filePath = path.join(commandsPath, file);
     const command = require(filePath);
-    if (typeof command.data.toJSON !== 'function') {
-        console.error(`La commande dans le fichier ${file} ne peut pas être convertie en JSON.`);
-        continue;
-    }
-    commands.push(command.data.toJSON());
+    client.commands.set(command.data.name, command);
+    commands.push(command.data.toJSON()); // Assurez-vous que toutes les commandes utilisent SlashCommandBuilder
 }
-
-
 
 const rest = new REST({ version: '10' }).setToken(process.env.DISCORD_TOKEN);
 
@@ -78,9 +48,7 @@ async function deployCommands() {
 
 client.once('ready', async () => {
     console.log(`${client.user.tag} est en ligne !`);
-    // Déployer les commandes ici si nécessaire
-    await deployCommands();
-    // Autres logiques de démarrage...
+    await deployCommands(); // Déployer les commandes au démarrage
 });
 
 client.on('interactionCreate', async interaction => {
