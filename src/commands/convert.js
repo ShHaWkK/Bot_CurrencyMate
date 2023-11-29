@@ -1,35 +1,26 @@
+const { EmbedBuilder } = require('discord.js');
 const api = require('../utils/api');
 const { SlashCommandBuilder } = require('@discordjs/builders');
-const { EmbedBuilder } = require('discord.js');
 
 module.exports = {
-    data: {
-        name: 'convert',
-        description: 'Convertir une devise en une autre',
-        options: [
-            {
-                name: 'from',
-                description: 'La devise à convertir',
-                type: 'STRING',
-                required: true
-            },
-            {
-                name: 'to',
-                description: 'La devise dans laquelle convertir',
-                type: 'STRING',
-                required: true
-            },
-            {
-                name: 'amount',
-                description: 'Le montant à convertir',
-                type: 'NUMBER',
-                required: true
-            }
-        ]
-    },
+    data: new SlashCommandBuilder()
+        .setName('convert')
+        .setDescription('Convertir une devise en une autre')
+        .addStringOption(option => 
+            option.setName('from')
+            .setDescription('La devise à convertir')
+            .setRequired(true))
+        .addStringOption(option => 
+            option.setName('to')
+            .setDescription('La devise dans laquelle convertir')
+            .setRequired(true))
+        .addNumberOption(option => 
+            option.setName('amount')
+            .setDescription('Le montant à convertir')
+            .setRequired(true)),
     async execute(interaction) {
-        const fromCurrency = interaction.options.getString('from');
-        const toCurrency = interaction.options.getString('to');
+        const fromCurrency = interaction.options.getString('from').toUpperCase();
+        const toCurrency = interaction.options.getString('to').toUpperCase();
         const amount = interaction.options.getNumber('amount');
 
         try {
@@ -37,7 +28,7 @@ module.exports = {
             const convertedAmount = (amount * rate).toFixed(2);
             await interaction.reply(`${amount} ${fromCurrency} = ${convertedAmount} ${toCurrency}`);
         } catch (error) {
-            await interaction.reply(error.message);
+            await interaction.reply(`Erreur lors de la conversion : ${error.message}`);
         }
-    }
+    },
 };
